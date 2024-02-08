@@ -1,1 +1,13 @@
-print("hello world")
+using System;
+class program
+{
+    static void Main()
+    {
+        string[] herodoto = {"Zues", "Winranger", "Morfling", "Lina"};
+        foreach (var veggie in herodoto)
+        {
+            Console.WriteLine(veggie);
+        }
+        
+    }
+}

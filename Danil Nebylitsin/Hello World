@@ -1,1 +1,9 @@
-print("Hello world!")
+using System;
+class HelloWorld {
+  static void Main() {
+    string[] cars = { "LADA", "SKODA", "BMW", "CHERRY",};
+foreach (int i in cars)
+{
+    Console.WriteLine(i);
+}
+ 

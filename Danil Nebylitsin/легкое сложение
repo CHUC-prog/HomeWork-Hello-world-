@@ -1,0 +1,8 @@
+using System;
+class HelloWorld {
+  static void Main() {
+    int a = 100;
+    int f = 125;
+    int c = a + b;
+    }
+}

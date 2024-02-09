@@ -1,24 +1,49 @@
 using System;
-class HelloWorld {
-  static void Main() {
-        Console.WriteLine("Введите число:");
-                    double V1 = Convert.ToDouble(Console.ReadLine());
 
-                    Console.WriteLine("Введите число:");
-                    double V2 = Convert.ToDouble(Console.ReadLine());
+namespace ConsoleApp2
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine("Введите скорость 1:");
+            double V1 = Convert.ToDouble(Console.ReadLine());
 
-                    Console.WriteLine("Введите число:");
-                    double T = Convert.ToDouble(Console.ReadLine());
+            Console.WriteLine("Введите скорость 2:");
+            double V2 = Convert.ToDouble(Console.ReadLine());
 
-                    Console.WriteLine("Введите число:");
-                    double S = Convert.ToDouble(Console.ReadLine());
+            Console.WriteLine("Введите время:");
+            double T = Convert.ToDouble(Console.ReadLine());
 
-                    double сумма = V1 + V2;
-                    double произведение = сумма * T;
-                    double сумма2 = произведение + S;
+            Console.WriteLine("Введите путь:");
+            double S = Convert.ToDouble(Console.ReadLine());
 
-                    Console.WriteLine($"сумма:" + сумма);
-                    Console.WriteLine($"произведение:" + произведение);
-                    Console.WriteLine($"сумма2:" + сумма2);;
-  }
+
+            //2 задача ФИНИШ
+            Console.WriteLine("Введите позицию финиша");
+            double finishPosition = Convert.ToDouble(Console.ReadLine());
+            double KilometersToMeters(double kilometers)
+            {
+                return kilometers * 1000;
+            }
+
+            Console.WriteLine("Введите позицию финиша");
+            double currentPosition = Convert.ToDouble(Console.ReadLine());
+
+
+
+
+
+            double сумма = V1 + V2;
+            double произведение = сумма * T;
+            double сумма2 = произведение + S;
+            double Дистанция = finishPosition - currentPosition;
+
+            Console.WriteLine($"сумма:" + сумма);
+            Console.WriteLine($"произведение:" + произведение);
+            Console.WriteLine($"сумма2:" + сумма2);
+            Console.WriteLine($"Дистанция:" + Дистанция);
+
+        }
+    }
 }

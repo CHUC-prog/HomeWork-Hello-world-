@@ -1,0 +1,41 @@
+using System;
+using System.Linq;
+
+namespace ConsoleApp1
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            int[] Chislo = { 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+            int sum = Chislo.Sum();
+            Console.WriteLine(sum);
+
+
+            Console.WriteLine("~~~~~~~~~~~~");
+
+
+            int[] anArray = { 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+            int max = anArray.Max();
+            int maxI = anArray.ToList().IndexOf(max);
+            int min = anArray.Min();
+            int minI = anArray.ToList().IndexOf(min);
+
+            Console.WriteLine($"Максимальное число:{max}");
+            Console.WriteLine($"Минимальное число:{min}");
+
+
+            Console.WriteLine("~~~~~~~~~~~~");
+
+            Console.WriteLine("Введите слово:");
+
+
+            string str = Console.ReadLine();
+            char[] cArray = str.ToCharArray();
+            Array.Reverse(cArray);
+            string revStr = new string(cArray);
+
+            Console.WriteLine(str == revStr ? "Строка является палиндромом" : "Строка не является палиндромом");
+        }
+    }
+}

@@ -1,0 +1,27 @@
+package main
+
+import (
+	"fmt"
+	"math/rand"
+	"time"
+)
+
+var quetos = []string{
+	"Мы, пацаны, не обижаемся — мы делаем выводы!",
+	"Не беда, если нет друзей, беда если они фальшивые и продажные.",
+	"Нас меняет не жизнь, нас меняют люди.",
+	"Если пацан посадил девушку за руль своей машины – 100% он ее любит.",
+	"Слушай всех, прислушивайся к немногим, решай сам.",
+}
+
+func getPandomDute() string {
+
+	index := rand.Intn(len(quetos))
+	return quetos[index]
+}
+
+func main() {
+	rand.Seed(time.Now().UnixNano())
+	quoto := getPandomDute()
+	fmt.Println(quoto)
+}

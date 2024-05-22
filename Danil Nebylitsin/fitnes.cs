@@ -97,7 +97,7 @@ class WorkoutLog
 
 class FitnesApp
 {
-    static void Man()
+    static void Choice()
     {
         Console.WriteLine("Добро пожаловать в приложение ФитнесClub!");
         Console.WriteLine("Начните тренировку сегодня.");

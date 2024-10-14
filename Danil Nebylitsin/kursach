@@ -1,0 +1,311 @@
+using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+
+namespace TouristAgency
+{
+    public class User
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+
+        public User(string username, string password)
+        {
+            Username = username;
+            Password = password;
+        }
+    }
+
+    public class Employee : User
+    {
+        public Employee(string username, string password) : base(username, password) { }
+    }
+
+    public class Tour
+    {
+        public string Destination { get; set; }
+        public decimal Price { get; set; }
+        public string Duration { get; set; }
+
+        public Tour(string destination, decimal price, string duration)
+        {
+            Destination = destination;
+            Price = price;
+            Duration = duration;
+        }
+
+        public override string ToString()
+        {
+            return $"Направление: {Destination}, Цена: {Price} рублей, Длительность: {Duration}";
+        }
+    }
+
+    public class Agency
+    {
+        private List<Tour> tours;
+        private List<User> users;
+        private Employee employee;
+
+        public Agency()
+        {
+            tours = new List<Tour>
+            {
+                new Tour("Париж, Франция", 50000, "5 дней"),
+                new Tour("Барселона, Испания", 45000, "4 дня"),
+                new Tour("Рим, Италия", 52000, "6 дней"),
+                new Tour("Будапешт, Венгрия", 43000, "5 дней")
+            };
+
+            users = new List<User>();
+            employee = new Employee("admin", "admin123"); // Логин и пароль для входа сотрудника
+        }
+
+        public void AddTour(Tour tour)
+        {
+            tours.Add(tour);
+        }
+
+        public void DisplayTours()
+        {
+            if (tours.Count == 0)
+            {
+                Console.WriteLine("Нет доступных туров.");
+                return;
+            }
+
+            Console.WriteLine("Доступные туры:");
+            foreach (var tour in tours)
+            {
+                Console.WriteLine(tour);
+            }
+        }
+
+        public Tour SearchTour(string destination)
+        {
+            return tours.Find(t => t.Destination.Equals(destination, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public bool RegisterUser(string username, string password)
+        {
+            if (users.Exists(u => u.Username == username))
+            {
+                Console.WriteLine("Пользователь с таким именем уже существует.");
+                return false;
+            }
+
+            // Валидируем пароль
+            if (!IsValidPassword(password))
+            {
+                Console.WriteLine("Пароль должен содержать не менее 6 символов, включая хотя бы одну заглавную букву и одну цифру.");
+                return false;
+            }
+
+            users.Add(new User(username, password));
+            Console.WriteLine("Регистрация успешна!");
+            return true;
+        }
+
+        public User LoginUser(string username, string password)
+        {
+            return users.Find(u => u.Username == username && u.Password == password);
+        }
+
+        public Employee LoginEmployee(string username, string password)
+        {
+            if (employee.Username == username && employee.Password == password)
+            {
+                return employee; // Возвращаем единственного работника
+            }
+            return null; // Если неверные учетные данные, возвращаем null
+        }
+
+        private bool IsValidPassword(string password)
+        {
+            // Проверка на предмет минимальной длины и наличия требований
+            return password.Length >= 6 
+                && Regex.IsMatch(password, @"[A-Z]") // хотя бы одна заглавная буква
+                && Regex.IsMatch(password, @"[a-z]") // хотя бы одна строчная буква
+                && Regex.IsMatch(password, @"[0-9]"); // хотя бы одна цифра
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Agency agency = new Agency();
+            Console.WriteLine("Добро пожаловать в туристическое агентство!");
+
+            while (true)
+            {
+                Console.WriteLine("\nВыберите действие:");
+                Console.WriteLine("1. Регистрация пользователя");
+                Console.WriteLine("2. Вход пользователя");
+                Console.WriteLine("3. Вход работника");
+                Console.WriteLine("4. Выход");
+
+                string choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        Console.WriteLine("Введите имя пользователя:");
+                        string regUsername = Console.ReadLine();
+                        Console.WriteLine("Введите пароль:");
+                        string regPassword = Console.ReadLine();
+                        Console.WriteLine("Повторите пароль:");
+                        string regPasswordConfirm = Console.ReadLine();
+
+                        if (regPassword == regPasswordConfirm)
+                        {
+                            agency.RegisterUser(regUsername, regPassword);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Пароли не совпадают. Повторите попытку.");
+                        }
+                        break;
+
+                    case "2":
+                        Console.WriteLine("Введите имя пользователя:");
+                        string loginUsername = Console.ReadLine();
+                        Console.WriteLine("Введите пароль:");
+                        string loginPassword = Console.ReadLine();
+
+                        User user = agency.LoginUser(loginUsername, loginPassword);
+                        if (user != null)
+                        {
+                            Console.WriteLine("Вход успешен! Добро пожаловать, " + user.Username + "!");
+                            ShowUserMenu(agency);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Ошибка входа. Проверьте имя пользователя и пароль.");
+                        }
+                        break;
+
+                    case "3":
+                        Console.WriteLine("Введите имя работника:");
+                        string empLoginUsername = Console.ReadLine();
+                        Console.WriteLine("Введите пароль:");
+                        string empLoginPassword = Console.ReadLine();
+
+                        Employee employee = agency.LoginEmployee(empLoginUsername, empLoginPassword);
+                        if (employee != null)
+                        {
+                            Console.WriteLine("Вход работника успешен! Добро пожаловать, " + employee.Username + "!");
+                            ShowEmployeeMenu(agency);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Ошибка входа работника. Проверьте имя пользователя и пароль.");
+                        }
+                        break;
+
+                    case "4":
+                        Console.WriteLine("Выход из программы.");
+                        return;
+
+                    default:
+                        Console.WriteLine("Некорректный выбор, попробуйте еще раз.");
+                        break;
+                }
+            }
+        }
+
+        static void ShowUserMenu(Agency agency)
+        {
+            while (true)
+            {
+                Console.WriteLine("\nВыберите действие:");
+                Console.WriteLine("1. Просмотреть все туры");
+                Console.WriteLine("2. Найти тур по направлению");
+                Console.WriteLine("3. Выйти в главное меню");
+
+                string choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        agency.DisplayTours();
+                        break;
+
+                    case "2":
+                        Console.WriteLine("Введите направление для поиска:");
+                        string searchDestination = Console.ReadLine(); 
+                        Tour foundTour = agency.SearchTour(searchDestination);
+                        if (foundTour != null)
+                        {
+                            Console.WriteLine("Найденный тур: " + foundTour);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Тур не найден.");
+                        }
+                        break;
+
+                    case "3":
+                        return;
+
+                    default:
+                        Console.WriteLine("Некорректный выбор, попробуйте еще раз.");
+                        break;
+                }
+            }
+        }
+
+        static void ShowEmployeeMenu(Agency agency)
+        {
+            while (true)
+            {
+                Console.WriteLine("\nВыберите действие:");
+                Console.WriteLine("1. Добавить тур");
+                Console.WriteLine("2. Просмотреть все туры");
+                Console.WriteLine("3. Найти тур по направлению");
+                Console.WriteLine("4. Выйти в главное меню");
+
+                string choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        Console.WriteLine("Введите направление:");
+                        string destination = Console.ReadLine();
+                        Console.WriteLine("Введите цену:");
+                        decimal price = Convert.ToDecimal(Console.ReadLine());
+                        Console.WriteLine("Введите длительность:");
+                        string duration = Console.ReadLine();
+
+                        agency.AddTour(new Tour(destination, price, duration));
+                        Console.WriteLine("Тур успешно добавлен!");
+                        break;
+
+                    case "2":
+                        agency.DisplayTours();
+                        break;
+
+                    case "3":
+                        Console.WriteLine("Введите направление для поиска:");
+                        string searchDestination = Console.ReadLine();
+                        Tour foundTour = agency.SearchTour(searchDestination);
+                        if (foundTour != null)
+                        {
+                            Console.WriteLine("Найденный тур: " + foundTour);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Тур не найден.");
+                        }
+                        break;
+
+                    case "4":
+                        return;
+
+                    default:
+                        Console.WriteLine("Некорректный выбор, попробуйте еще раз.");
+                        break;
+                }
+            }
+        }
+    }
+}

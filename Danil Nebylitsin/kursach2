@@ -1,0 +1,367 @@
+using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+
+namespace TouristAgency
+{
+    public class User
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+
+        public User(string username, string password)
+        {
+            Username = username;
+            Password = password;
+        }
+    }
+
+    public class Employee : User
+    {
+        public Employee(string username, string password) : base(username, password) { }
+    }
+
+    public class Flight
+    {
+        public string FlightNumber { get; set; }
+        public string Destination { get; set; }
+        public DateTime DepartureTime { get; set; }
+        private bool[] seats; // Массив мест (true - занято, false - свободно)
+        public List<int> BookedSeats { get; private set; } // Список забронированных мест
+
+        public Flight(string flightNumber, string destination, DateTime departureTime)
+        {
+            FlightNumber = flightNumber;
+            Destination = destination;
+            DepartureTime = departureTime;
+            seats = new bool[20]; // 20 мест
+            BookedSeats = new List<int>();
+        }
+
+        public override string ToString()
+        {
+            return $"{FlightNumber} - {Destination} (Время вылета: {DepartureTime})";
+        }
+
+        public void DisplayAvailableSeats()
+        {
+            Console.WriteLine("Доступные места:");
+            for (int i = 0; i < seats.Length; i++)
+            {
+                Console.WriteLine($"Место {i + 1}: {(seats[i] ? "Занято" : "Свободно")}");
+            }
+        }
+
+        public bool BookSeat(int seatNumber)
+        {
+            if (seatNumber < 1 || seatNumber > seats.Length)
+            {
+                Console.WriteLine("Некорректный номер места.");
+                return false;
+            }
+
+            if (seats[seatNumber - 1])
+            {
+                Console.WriteLine("Это место уже забронировано.");
+                return false;
+            }
+
+            seats[seatNumber - 1] = true; // Занимаем место
+            BookedSeats.Add(seatNumber); // Добавляем номер места в список забронированных
+            Console.WriteLine($"Место {seatNumber} успешно забронировано!");
+            return true;
+        }
+    }
+
+    public class Agency
+    {
+        private List<User> users;
+        private List<Employee> employees;
+        private List<Flight> flights;
+
+        public Agency()
+        {
+            users = new List<User>();
+            employees = new List<Employee>
+            {
+                new Employee("admin", "admin123") // Логин и пароль для входа сотрудника
+            };
+
+            // Пример рейсов
+            flights = new List<Flight>
+            {
+                new Flight("FL123", "Нью-Йорк", DateTime.Now.AddHours(2)),
+                new Flight("FL456", "Лондон", DateTime.Now.AddHours(5)),
+                new Flight("FL789", "Токио", DateTime.Now.AddHours(10))
+            };
+        }
+
+        public bool RegisterUser(string username, string password)
+        {
+            if (users.Exists(u => u.Username == username))
+            {
+                Console.WriteLine("Пользователь с таким именем уже существует.");
+                return false;
+            }
+            if (!IsValidPassword(password))
+            {
+                Console.WriteLine("Пароль должен содержать не менее 6 символов, включая хотя бы одну заглавную букву и одну цифру.");
+                return false;
+            }
+            users.Add(new User(username, password));
+            Console.WriteLine("Регистрация успешна!");
+            return true;
+        }
+
+        public User LoginUser(string username, string password)
+        {
+            return users.Find(u => u.Username == username && u.Password == password);
+        }
+
+        public Employee LoginEmployee(string username, string password)
+        {
+            return employees.Find(e => e.Username == username && e.Password == password);
+        }
+        private bool IsValidPassword(string password)
+        {
+            return password.Length >= 6
+                && Regex.IsMatch(password, @"[A-Z]")
+                && Regex.IsMatch(password, @"[a-z]")
+                && Regex.IsMatch(password, @"[0-9]");
+        }
+
+        public void DisplayFlights()
+        {
+            Console.WriteLine("Доступные рейсы:");
+            foreach (var flight in flights)
+            {
+                Console.WriteLine(flight);
+            }
+        }
+
+        public void AddFlight(string flightNumber, string destination, DateTime departureTime)
+        {
+            flights.Add(new Flight(flightNumber, destination, departureTime));
+            Console.WriteLine("Рейс успешно добавлен!");
+        }
+
+        public void AddEmployee(string username, string password)
+        {
+            if (employees.Exists(e => e.Username == username))
+            {
+                Console.WriteLine("Сотрудник с таким именем уже существует.");
+                return;
+            }
+
+            employees.Add(new Employee(username, password));
+            Console.WriteLine("Сотрудник успешно добавлен!");
+        }
+
+        public void ViewBookedSeats(Flight flight)
+        {
+            Console.WriteLine($"Забронированные места для рейса {flight.FlightNumber}:");
+            foreach (var seat in flight.BookedSeats)
+            {
+                Console.WriteLine($"Место {seat}");
+            }
+        }
+
+        static void Main(string[] args)
+        {
+            Agency agency = new Agency();
+            bool exit = false;
+
+            while (!exit)
+            {
+                Console.WriteLine("1. Зарегистрироваться как пользователь");
+                Console.WriteLine("2. Войти как пользователь");
+                Console.WriteLine("3. Войти как сотрудник");
+                Console.WriteLine("4. Выйти");
+                Console.Write("Выберите действие: ");
+
+                string choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        Console.Write("Введите имя пользователя: ");
+                        string newUsername = Console.ReadLine();
+                        Console.Write("Введите пароль: ");
+                        string newPassword = Console.ReadLine();
+                        agency.RegisterUser(newUsername, newPassword);
+                        break;
+
+                    case "2":
+                        Console.Write("Введите имя пользователя: ");
+                        string username = Console.ReadLine();
+                        Console.Write("Введите пароль: ");
+                        string password = Console.ReadLine();
+                        User loggedInUser = agency.LoginUser(username, password);
+                        if (loggedInUser != null)
+                        {
+                            UserMenu(agency, loggedInUser);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Неверное имя пользователя или пароль.");
+                        }
+                        break;
+
+                    case "3":
+                        Console.Write("Введите имя сотрудника: ");
+                        string empUsername = Console.ReadLine();
+                        Console.Write("Введите пароль: ");
+                        string empPassword = Console.ReadLine();
+                        Employee employee = agency.LoginEmployee(empUsername, empPassword);
+                        if (employee != null)
+                        {
+                            EmployeeMenu(agency, employee);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Неверное имя пользователя или пароль для сотрудника.");
+                        }
+                        break;
+
+                    case "4":
+                        exit = true;
+                        break;
+
+                    default:
+                        Console.WriteLine("Некорректный выбор. Пожалуйста, попробуйте снова.");
+                        break;
+                }
+
+                Console.WriteLine(); // Пустая строка для разделения действий
+            }
+
+            Console.WriteLine("Спасибо за использование нашего туристического агентства!");
+        }
+
+        private static void UserMenu(Agency agency, User user)
+        {
+            bool userSessionActive = true;
+            while (userSessionActive)
+            {
+                Console.WriteLine($"Добро пожаловать, {user.Username}!");
+                Console.WriteLine("1. Просмотреть рейсы");
+                Console.WriteLine("2. Забронировать рейс");
+                Console.WriteLine("3. Выйти из аккаунта");
+                Console.Write("Выберите действие: ");
+
+                string userChoice = Console.ReadLine();
+
+                switch (userChoice)
+                {
+                    case "1":
+                        agency.DisplayFlights();
+                        break;
+
+                    case "2":
+                        agency.DisplayFlights(); // Показываем доступные рейсы перед бронированием
+                        Console.Write("Введите номер рейса для бронирования: ");
+                        string flightNumber = Console.ReadLine();
+
+                        var flightToBook = agency.flights.Find(f => f.FlightNumber == flightNumber);
+
+                        if (flightToBook != null)
+                        {
+                            flightToBook.DisplayAvailableSeats(); // Показываем доступные места
+                            Console.Write("Выберите номер места для бронирования: ");
+                            if (int.TryParse(Console.ReadLine(), out int seatNumber))
+                            {
+                                flightToBook.BookSeat(seatNumber); // Пытаемся забронировать выбранное место
+                            }
+                            else
+                            {
+                                Console.WriteLine("Некорректный ввод номера места.");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Рейс не найден.");
+                        }
+                        break;
+
+                    case "3":
+                        userSessionActive = false;
+                        break;
+
+                    default:
+                        Console.WriteLine("Некорректный выбор. Пожалуйста, попробуйте снова.");
+                        break;
+                }
+            }
+        }
+
+        private static void EmployeeMenu(Agency agency, Employee employee)
+        {
+            bool employeeSessionActive = true;
+            while (employeeSessionActive)
+            {
+                Console.WriteLine($"Добро пожаловать, {employee.Username}!");
+                Console.WriteLine("1. Добавить рейс");
+                Console.WriteLine("2. Добавить сотрудника");
+                Console.WriteLine("3. Просмотреть забронированные места");
+                Console.WriteLine("4. Выйти из аккаунта");
+                Console.Write("Выберите действие: ");
+
+                string empChoice = Console.ReadLine();
+
+                switch (empChoice)
+                {
+                    case "1":
+                        Console.Write("Введите номер рейса: ");
+                        string flightNumber = Console.ReadLine();
+                        Console.Write("Введите пункт назначения: ");
+                        string destination = Console.ReadLine();
+                        Console.Write("Введите время вылета (в формате ГГГГ-ММ-ДД ЧЧ:ММ): ");
+
+                        if (DateTime.TryParse(Console.ReadLine(), out DateTime departureTime))
+                        {
+                            agency.AddFlight(flightNumber, destination, departureTime);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Некорректный формат времени.");
+                        }
+                        break;
+
+                    case "2":
+                        Console.Write("Введите имя нового сотрудника: ");
+                        string newEmpUsername = Console.ReadLine();
+                        Console.Write("Введите пароль нового сотрудника: ");
+                        string newEmpPassword = Console.ReadLine();
+
+                        agency.AddEmployee(newEmpUsername, newEmpPassword);
+                        break;
+
+                    case "3":
+                        agency.DisplayFlights(); 
+                        Console.Write("Введите номер рейса для просмотра забронированных мест: ");
+                        string flightNumberToView = Console.ReadLine(); 
+
+                        var flightToView = agency.flights.Find(f => f.FlightNumber == flightNumberToView);
+
+                        if (flightToView != null)
+                        {
+                            agency.ViewBookedSeats(flightToView);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Рейс не найден.");
+                        }
+                        break;
+
+                    case "4":
+                        employeeSessionActive = false;
+                        break;
+
+                    default:
+                        Console.WriteLine("Некорректный выбор. Пожалуйста, попробуйте снова.");
+                        break;
+                }
+            }
+        }
+    }
+}
